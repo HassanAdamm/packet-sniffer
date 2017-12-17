@@ -3,13 +3,25 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 import javax.swing.JFrame;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import jpcap.JpcapCaptor;
 import jpcap.NetworkInterface;
-
+import jpcap.packet.TCPPacket;
+import jpcap.PacketReceiver;
+import jpcap.packet.Packet;
+import jpcap.*;
+import jpcap.packet.EthernetPacket;
+import java.io.Serializable;
+import java.net.DatagramPacket;
+import jpcap.packet.UDPPacket;
+import javax.swing.*;
+import javax.swing.table.*;
+import java.awt.*;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  *
  * @author ramy
@@ -17,7 +29,9 @@ import jpcap.NetworkInterface;
 
 
 public class sniffer extends javax.swing.JFrame {
-
+    
+    String x;
+Packet packet;
     /**
      * Creates new form sniffer
      */
@@ -25,9 +39,11 @@ public class sniffer extends javax.swing.JFrame {
         initComponents();
     }
     public static NetworkInterface[] NETWORK_INTERFACES;
-    JpcapCaptor CAP;
+    JpcapWriter writer;
+    public static JpcapCaptor CAP;
    jpcap_thread THREAD;
     public static int INDEX = 0;
+    public static int flag=0;
     public static int COUNTER = 0;
     boolean CaptureState = false;
    public void CapturePackets(){
@@ -40,6 +56,16 @@ public class sniffer extends javax.swing.JFrame {
         try{
         
             CAP = JpcapCaptor.openDevice(NETWORK_INTERFACES[INDEX], 65535, false, 20);
+             if("udp".equals(textArea1.getText()) ||textArea1.getText()=="UDP"||textArea1.getText()=="Udp" )
+        {
+            CAP.setFilter("udp", true);
+        }
+        else if("tcp".equals(textArea1.getText()) ||textArea1.getText()=="TCP"||textArea1.getText()=="Tcp" )
+        {   
+            CAP.setFilter("tcp", true);
+        }
+        else
+        {}
             while(CaptureState){
             
                 CAP.processPacket(1, new PacketContents());
@@ -81,28 +107,16 @@ public class sniffer extends javax.swing.JFrame {
         stopButton = new java.awt.Button();
         jLabel1 = new javax.swing.JLabel();
         textArea1 = new java.awt.TextArea();
-        filterButton = new java.awt.Button();
-        clearButton = new java.awt.Button();
+        listButton = new java.awt.Button();
+        saveButton = new java.awt.Button();
+        loadButton = new java.awt.Button();
         jScrollPane4 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTextArea2 = new javax.swing.JTextArea();
-        jButton1 = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        saveMenuItem = new javax.swing.JMenuItem();
-        jSeparator4 = new javax.swing.JPopupMenu.Separator();
-        loadMenuItem = new javax.swing.JMenuItem();
-        jSeparator5 = new javax.swing.JPopupMenu.Separator();
-        exitMenuItem = new javax.swing.JMenuItem();
-        captureMenuBar = new javax.swing.JMenu();
-        listMenuItem = new javax.swing.JMenuItem();
-        jSeparator2 = new javax.swing.JPopupMenu.Separator();
-        startMenuItem = new javax.swing.JMenuItem();
-        jSeparator1 = new javax.swing.JPopupMenu.Separator();
-        stopMenuItem = new javax.swing.JMenuItem();
 
         jMenu2.setText("File");
         jMenuBar2.add(jMenu2);
@@ -127,30 +141,42 @@ public class sniffer extends javax.swing.JFrame {
         jToolBar1.add(captureButton);
 
         stopButton.setLabel("Stop");
+        stopButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stopButtonActionPerformed(evt);
+            }
+        });
         jToolBar1.add(stopButton);
 
         jLabel1.setText("Filter");
         jToolBar1.add(jLabel1);
         jToolBar1.add(textArea1);
 
-        filterButton.setLabel("Filter");
-        filterButton.addActionListener(new java.awt.event.ActionListener() {
+        listButton.setLabel("List Devices");
+        listButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                filterButtonActionPerformed(evt);
+                listButtonActionPerformed(evt);
             }
         });
-        jToolBar1.add(filterButton);
+        jToolBar1.add(listButton);
 
-        clearButton.setLabel("Clear");
-        clearButton.setName(""); // NOI18N
-        jToolBar1.add(clearButton);
+        saveButton.setLabel("Save");
+        saveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(saveButton);
+
+        loadButton.setLabel("Load");
+        jToolBar1.add(loadButton);
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "No.", "Time", "Source", "Destination", "Protocol"
+                "No.", "Length", "Source", "Destination", "Protocol"
             }
         ) {
             Class[] types = new Class [] {
@@ -177,54 +203,6 @@ public class sniffer extends javax.swing.JFrame {
         jTextArea2.setRows(5);
         jScrollPane2.setViewportView(jTextArea2);
 
-        jButton1.setText("jButton1");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
-        jMenu1.setText("File");
-
-        saveMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
-        saveMenuItem.setText("Save");
-        jMenu1.add(saveMenuItem);
-        jMenu1.add(jSeparator4);
-
-        loadMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
-        loadMenuItem.setText("Load");
-        jMenu1.add(loadMenuItem);
-        jMenu1.add(jSeparator5);
-
-        exitMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
-        exitMenuItem.setText("Exit");
-        jMenu1.add(exitMenuItem);
-
-        jMenuBar1.add(jMenu1);
-
-        captureMenuBar.setText("Capture");
-
-        listMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
-        listMenuItem.setText("List&Select");
-        listMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                listMenuItemActionPerformed(evt);
-            }
-        });
-        captureMenuBar.add(listMenuItem);
-        captureMenuBar.add(jSeparator2);
-
-        startMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_MASK));
-        startMenuItem.setText("Start");
-        captureMenuBar.add(startMenuItem);
-        captureMenuBar.add(jSeparator1);
-
-        stopMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
-        stopMenuItem.setText("Stop");
-        captureMenuBar.add(stopMenuItem);
-
-        jMenuBar1.add(captureMenuBar);
-
         setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -233,11 +211,8 @@ public class sniffer extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 784, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jButton1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1))
             .addComponent(jScrollPane2)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -245,51 +220,81 @@ public class sniffer extends javax.swing.JFrame {
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jButton1)
-                        .addGap(51, 51, 51)))
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void filterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_filterButtonActionPerformed
-
-    private void listMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_listMenuItemActionPerformed
-        // TODO add your handling code here:
-NewWindow nw=new NewWindow();
-    }//GEN-LAST:event_listMenuItemActionPerformed
 
     private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable1MouseClicked
         // TODO add your handling code here:
        /* int index=jTable1.getSelectedRow();
         TableModel model= jTable1.getModel();
         System.out.println("row "+index+" clicked");*/
-       int index=jTable1.getSelectedRow();
-       jTextArea1.setText("hello"+index);
+      /* int index=jTable1.getSelectedRow();
+       jTextArea1.setText("AckNo.="+PacketContents.tcp[index].getAcknowledgementNumber());*/ 
+//TableModel model= jTable1.getModel();
+/*TCPPacket tcp;
+      Object obj = jTable1.getModel().getValueAt(jTable1.getSelectedRow(),0);
+     // jTextArea1.setText("no");
+//packet= PacketContents.pkt[(int)obj];
+packet= PacketContents.pkt[0];
+    System.out.println("hi2");
+    //
+if(packet instanceof TCPPacket)
+{
+    System.out.println("hi");
+     tcp=(TCPPacket) packet;
+    jTextArea1.setText("src_ip="+tcp.src_ip+"   dst_ip="+tcp.dst_ip+"\n");
+}
+else if(PacketContents.pkt[(int)obj] instanceof UDPPacket)
+{
+    System.out.println("hi");
+    UDPPacket udp=(UDPPacket) packet;
+    jTextArea1.setText("src_ip="+udp.src_ip+"   dst_ip="+udp.dst_ip+"\n");
+}*/
+
+
+Object obj = jTable1.getModel().getValueAt(jTable1.getSelectedRow(),0);
+if(PacketContents.rowList.get((int)obj)[4]=="tcp")
+{    jTextArea1.setText("Packet No:"+PacketContents.rowList.get((int)obj)[0]
+    +"Seq No:"+PacketContents.rowList.get((int)obj)[10]
+    +"\nProtocol:"+PacketContents.rowList.get((int)obj)[4]
+    +"\nSource IP: "+PacketContents.rowList.get((int)obj)[2]
+    +"\nDist IP:"+PacketContents.rowList.get((int)obj)[3]
+    +"\nLength:"+PacketContents.rowList.get((int)obj)[1]
+    +"\nSource Port:"+PacketContents.rowList.get((int)obj)[5]
+    +"\nDist Port:"+PacketContents.rowList.get((int)obj)[6]
+    +"\nAck:"+PacketContents.rowList.get((int)obj)[7]
+    +"\nAck No:"+PacketContents.rowList.get((int)obj)[8]
+    +"\nData:"+PacketContents.rowList.get((int)obj)[9]
+    
+);    
+}
+else if(PacketContents.rowList.get((int)obj)[4]=="udp")
+{    jTextArea1.setText("Packet No:"+PacketContents.rowList.get((int)obj)[0]
+    +"\nProtocol:"+PacketContents.rowList.get((int)obj)[4]
+    +"\nSource IP: "+PacketContents.rowList.get((int)obj)[2]
+    +"\nDist IP:"+PacketContents.rowList.get((int)obj)[3]
+    +"\nLength:"+PacketContents.rowList.get((int)obj)[1]
+    +"\nSource Port:"+PacketContents.rowList.get((int)obj)[5]
+    +"\nDist Port:"+PacketContents.rowList.get((int)obj)[6]
+    +"\nData:"+PacketContents.rowList.get((int)obj)[7]
+        /*+"\nAck:"+PacketContents.rowList.get((int)obj)[7]
+    +"\nAck No:"+PacketContents.rowList.get((int)obj)[8]*/
+);    
+} 
+     
+    
+    
+    
+    
+
+
     }//GEN-LAST:event_jTable1MouseClicked
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-String data1 = "1";
-    String data2 = "2";
-    String data3 = "3";
-    String data4 = "4";
-    String data5 = "5";
-
-    Object[] row = { data1, data2, data3, data4,data5 };
-
-    DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-
-    model.addRow(row);        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
 
     private void captureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_captureButtonActionPerformed
         // TODO add your handling code here:
@@ -297,6 +302,32 @@ String data1 = "1";
         CaptureState = true;
         CapturePackets();
     }//GEN-LAST:event_captureButtonActionPerformed
+
+    private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
+        // TODO add your handling code here:
+        CaptureState = false;
+        THREAD.finished();
+    }//GEN-LAST:event_stopButtonActionPerformed
+
+    private void listButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_listButtonActionPerformed
+        // TODO add your handling code here:
+        NewWindow nw=new NewWindow();
+    }//GEN-LAST:event_listButtonActionPerformed
+
+    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
+        /*try {     
+            System.out.println("hi");
+            writer=JpcapWriter.openDumpFile(CAP,"CAP");
+            System.out.println("hi2");
+            Object obj = jTable1.getModel().getValueAt(jTable1.getSelectedRow(),0);
+            System.out.println("hi3");
+            writer.writePacket(PacketContents.pkt[(int)obj]);
+            System.out.println("hi4");
+            writer.close();
+        } catch (IOException ex) {
+            Logger.getLogger(sniffer.class.getName()).log(Level.SEVERE, null, ex);
+        }*/
+    }//GEN-LAST:event_saveButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -335,13 +366,7 @@ String data1 = "1";
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private java.awt.Button captureButton;
-    private javax.swing.JMenu captureMenuBar;
-    private java.awt.Button clearButton;
-    private javax.swing.JMenuItem exitMenuItem;
-    private java.awt.Button filterButton;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
@@ -351,20 +376,14 @@ String data1 = "1";
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JPopupMenu.Separator jSeparator1;
-    private javax.swing.JPopupMenu.Separator jSeparator2;
-    private javax.swing.JPopupMenu.Separator jSeparator4;
-    private javax.swing.JPopupMenu.Separator jSeparator5;
     public static javax.swing.JTable jTable1;
     public static javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextArea jTextArea2;
     private javax.swing.JToolBar jToolBar1;
-    private javax.swing.JMenuItem listMenuItem;
-    private javax.swing.JMenuItem loadMenuItem;
-    private javax.swing.JMenuItem saveMenuItem;
-    private javax.swing.JMenuItem startMenuItem;
+    private java.awt.Button listButton;
+    private java.awt.Button loadButton;
+    private java.awt.Button saveButton;
     private java.awt.Button stopButton;
-    private javax.swing.JMenuItem stopMenuItem;
     private java.awt.TextArea textArea1;
     // End of variables declaration//GEN-END:variables
 }

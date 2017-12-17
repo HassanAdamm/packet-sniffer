@@ -12,7 +12,7 @@ public class SnifferForm extends javax.swing.JFrame {
     int INDEX = 0;
     int COUNTER = 0;
     boolean CaptureState = false;
-    
+    public static int No=0;
     
     
     
@@ -223,6 +223,7 @@ public class SnifferForm extends javax.swing.JFrame {
             while(CaptureState){
             
                 CAP.processPacket(1, new PacketContents());
+                
             
             }
         CAP.close();
