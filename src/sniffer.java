@@ -20,8 +20,10 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.bind.DatatypeConverter;
 /**
  *
  * @author ramy
@@ -41,11 +43,27 @@ Packet packet;
     public static NetworkInterface[] NETWORK_INTERFACES;
     JpcapWriter writer;
     public static JpcapCaptor CAP;
-   jpcap_thread THREAD;
+    jpcap_thread THREAD;
     public static int INDEX = 0;
-    public static int flag=0;
+    public static int flag = 0;
     public static int COUNTER = 0;
     boolean CaptureState = false;
+    
+    public static String toHexadecimal(String text) throws UnsupportedEncodingException {
+        byte[] myBytes = text.getBytes("UTF-8");
+
+        return DatatypeConverter.printHexBinary(myBytes);
+    }
+    
+    public static String customizeHexa(String text){
+    
+    String out;
+    out= text.replaceAll("(.{32})", "$1\n");
+    return out.replaceAll("..(?!$)", "$0 ");
+    }
+    
+    
+    
    public void CapturePackets(){
     
     
@@ -195,10 +213,14 @@ Packet packet;
         });
         jScrollPane4.setViewportView(jTable1);
 
+        jTextArea1.setEditable(false);
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
         jScrollPane1.setViewportView(jTextArea1);
 
+        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        jTextArea2.setEditable(false);
         jTextArea2.setColumns(20);
         jTextArea2.setRows(5);
         jScrollPane2.setViewportView(jTextArea2);
@@ -223,7 +245,7 @@ Packet packet;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE))
         );
 
         pack();
@@ -272,7 +294,14 @@ if(PacketContents.rowList.get((int)obj)[4]=="tcp")
     +"\nAck No:"+PacketContents.rowList.get((int)obj)[8]
     +"\nData:"+PacketContents.rowList.get((int)obj)[9]
     
-);    
+);
+
+    try {
+        jTextArea2.setText(customizeHexa(toHexadecimal(jTextArea1.getText())));
+    } catch (UnsupportedEncodingException ex) {
+        Logger.getLogger(sniffer.class.getName()).log(Level.SEVERE, null, ex);
+    }
+
 }
 else if(PacketContents.rowList.get((int)obj)[4]=="udp")
 {    jTextArea1.setText("Packet No:"+PacketContents.rowList.get((int)obj)[0]
@@ -285,7 +314,15 @@ else if(PacketContents.rowList.get((int)obj)[4]=="udp")
     +"\nData:"+PacketContents.rowList.get((int)obj)[7]
         /*+"\nAck:"+PacketContents.rowList.get((int)obj)[7]
     +"\nAck No:"+PacketContents.rowList.get((int)obj)[8]*/
-);    
+);
+
+ try {
+        jTextArea2.setText(customizeHexa(toHexadecimal(jTextArea1.getText())));
+    } catch (UnsupportedEncodingException ex) {
+        Logger.getLogger(sniffer.class.getName()).log(Level.SEVERE, null, ex);
+    }
+
+
 } 
      
     
