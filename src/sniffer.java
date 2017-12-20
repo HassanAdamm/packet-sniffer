@@ -55,7 +55,7 @@ public class sniffer extends javax.swing.JFrame {
                 try {
 
                     CAP = JpcapCaptor.openDevice(NETWORK_INTERFACES[INDEX], 65535, false, 20);
-                    writer = JpcapWriter.openDumpFile(CAP, "captureddata");
+                    //writer = JpcapWriter.openDumpFile(CAP, "captureddata");
                     if ("UDP".equals(filter_options.getSelectedItem().toString())) {
                         CAP.setFilter("udp", true);
                     } else if ("TCP".equals(filter_options.getSelectedItem().toString())) {
