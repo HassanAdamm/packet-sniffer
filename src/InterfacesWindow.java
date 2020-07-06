@@ -14,7 +14,6 @@ public class InterfacesWindow extends javax.swing.JFrame {
     }
 
     public void ListNetworkInterfaces() {
-
         sniffer.NETWORK_INTERFACES = JpcapCaptor.getDeviceList();
         jTextArea1.setText("");
         for (int i = 0; i < sniffer.NETWORK_INTERFACES.length; i++) {
@@ -30,38 +29,50 @@ public class InterfacesWindow extends javax.swing.JFrame {
                     + sniffer.NETWORK_INTERFACES[i].datalink_description + ")");
             jTextArea1.append("\nMac Address:            ");
 
-            byte[] R = sniffer.NETWORK_INTERFACES[i].mac_address;
-            for (int A = 0; A < sniffer.NETWORK_INTERFACES.length; A++) {
-                jTextArea1.append(Integer.toHexString(R[A] & 0xff) + ":");
+            for(byte X: sniffer.NETWORK_INTERFACES[i].mac_address)
+            {
+                jTextArea1.append(Integer.toHexString(X & 0xff) + ":");
             }
 
-            NetworkInterfaceAddress[] INT = sniffer.NETWORK_INTERFACES[i].addresses;
-            jTextArea1.append("\nIP Address:                " + INT[0].address);
-            jTextArea1.append("\nSubnet Mask:            " + INT[0].subnet);
-            jTextArea1.append("\nBroadcast Address: " + INT[0].broadcast);
+            for(NetworkInterfaceAddress INTF: sniffer.NETWORK_INTERFACES[i].addresses)
+            {
+                jTextArea1.append("\nIP Address:                " + INTF.address);
+                jTextArea1.append("\nSubnet Mask:            " + INTF.subnet);
+                jTextArea1.append("\nBroadcast Address: " + INTF.broadcast);
+            }
 
             sniffer.COUNTER++;
         }
     }
 
     public void ChooseInterface() {
-
-        int TEMP = Integer.parseInt(textField1.getText());
+        int TEMP;
+        
+        try{
+            TEMP = Integer.parseInt(textField1.getText());
+        }catch(NumberFormatException evt){
+            TEMP = -1;
+        }
 
         if (TEMP > -1 && TEMP < sniffer.COUNTER) {
             sniffer.INDEX = TEMP;
-            sniffer.captureButton.setEnabled(true);
-            sniffer.filter_options.setEnabled(true);
-            sniffer.stopButton.setEnabled(true);
-            sniffer.saveButton.setEnabled(true);
+            enabledButtons(true);
         } else {
             JOptionPane.showMessageDialog(null, "Outside the RANGE. # interfaces = 0-" + (sniffer.COUNTER - 1) + ".");
             InterfacesWindow nw = new InterfacesWindow();
-
         }
 
         textField1.setText("");
 
+    }
+    
+    public void enabledButtons(boolean enabled){
+        sniffer.captureButton.setEnabled(enabled);
+        sniffer.filter_options.setEnabled(enabled);
+        sniffer.stopButton.setEnabled(enabled);
+        sniffer.saveButton.setEnabled(enabled);     
+        sniffer.clearButton.setEnabled(enabled);
+        sniffer.advancedButtons.setEnabled(enabled);
     }
 
     @SuppressWarnings("unchecked")

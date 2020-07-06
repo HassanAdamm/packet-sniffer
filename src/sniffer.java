@@ -4,11 +4,14 @@ import jpcap.packet.Packet;
 import jpcap.*;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.DatatypeConverter;
 import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 public class sniffer extends javax.swing.JFrame {
 
@@ -28,6 +31,7 @@ public class sniffer extends javax.swing.JFrame {
     public static int COUNTER = 0;
     boolean CaptureState = false;
     public static int No = 0;
+    AdvancedFilter advanced = new AdvancedFilter();
 
     JpcapWriter writer = null;
     List<Packet> packetList = new ArrayList<>();
@@ -63,6 +67,8 @@ public class sniffer extends javax.swing.JFrame {
                     } else if ("ICMP".equals(filter_options.getSelectedItem().toString())) {
                         CAP.setFilter("icmp", true);
                     }
+                    
+                    portFilter();
 
                     while (CaptureState) {
 
@@ -85,6 +91,40 @@ public class sniffer extends javax.swing.JFrame {
         THREAD.start();
 
     }
+    
+    private void portFilter() throws IOException{
+    
+        if (advanced.getjHTTP().isSelected()){            
+            CAP.setFilter("port 80",true);
+        }
+        else if (advanced.getjSSL().isSelected()){
+                CAP.setFilter("port 443", true);
+        }
+        else if (advanced.getjFTP().isSelected()){
+                CAP.setFilter("port 21", true);
+        }
+        else if (advanced.getjSSH().isSelected()){
+                CAP.setFilter("port 22", true);
+        }
+        else if (advanced.getjTELNET().isSelected()){
+                CAP.setFilter("port 23", true);
+        }
+        else if (advanced.getjSMTP().isSelected()){
+                CAP.setFilter("port 25", true);
+        }    
+        else if (advanced.getjPOP().isSelected()){
+                CAP.setFilter("port 110", true);
+        }
+        else if (advanced.getjIMAP().isSelected()){
+                CAP.setFilter("port 143", true);
+        }
+        else if (advanced.getjIMAPS().isSelected()){
+                CAP.setFilter("port 993", true);
+        }
+        else if (advanced.getjDNS().isSelected()){
+                CAP.setFilter("port 53", true);
+        }
+    }
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -101,7 +141,9 @@ public class sniffer extends javax.swing.JFrame {
         filter_options = new javax.swing.JComboBox<>();
         captureButton = new java.awt.Button();
         stopButton = new java.awt.Button();
+        advancedButtons = new java.awt.Button();
         saveButton = new java.awt.Button();
+        clearButton = new java.awt.Button();
         jScrollPane4 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable(){
             public boolean isCellEditable(int row, int column){
@@ -130,6 +172,7 @@ public class sniffer extends javax.swing.JFrame {
         setTitle("ZARA Packet Sniffer");
         setName("ZARA Packet Sniffer"); // NOI18N
 
+        jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
         listButton.setActionCommand("List Interfaces");
@@ -148,7 +191,7 @@ public class sniffer extends javax.swing.JFrame {
         jLabel1.setText(" Filter");
         jToolBar1.add(jLabel1);
 
-        filter_options.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "---", "TCP", "UDP", "ICMP" }));
+        filter_options.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "All Protocols", "TCP", "UDP", "ICMP" }));
         filter_options.setPreferredSize(new java.awt.Dimension(320, 24));
         filter_options.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -179,8 +222,22 @@ public class sniffer extends javax.swing.JFrame {
         });
         jToolBar1.add(stopButton);
 
+        advancedButtons.setBackground(new java.awt.Color(240, 240, 240));
+        advancedButtons.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        advancedButtons.setEnabled(false);
+        advancedButtons.setFont(new java.awt.Font("Dialog", 1, 12)); // NOI18N
+        advancedButtons.setLabel("...");
+        advancedButtons.setPreferredSize(new java.awt.Dimension(83, 24));
+        advancedButtons.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                advancedButtonsActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(advancedButtons);
+
         saveButton.setLabel("Save");
         saveButton.setPreferredSize(new java.awt.Dimension(83, 24));
+        saveButton.setVisible(false);
         saveButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveButtonActionPerformed(evt);
@@ -188,20 +245,38 @@ public class sniffer extends javax.swing.JFrame {
         });
         jToolBar1.add(saveButton);
 
+        clearButton.setEnabled(false);
+        clearButton.setLabel("Clear");
+        clearButton.setName("clearButton"); // NOI18N
+        clearButton.setPreferredSize(new java.awt.Dimension(83, 24));
+        clearButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clearButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(clearButton);
+
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "No.", "Length", "Source", "Destination", "Protocol"
+                "No.", "Length", "Source", "Destination", "Protocol", "Appl."
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.String.class
+                java.lang.Integer.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.String.class, java.lang.Object.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
             }
         });
         jTable1.setRowHeight(20);
@@ -211,6 +286,16 @@ public class sniffer extends javax.swing.JFrame {
             }
         });
         jScrollPane4.setViewportView(jTable1);
+        if (jTable1.getColumnModel().getColumnCount() > 0) {
+            jTable1.getColumnModel().getColumn(0).setResizable(false);
+            jTable1.getColumnModel().getColumn(0).setPreferredWidth(20);
+            jTable1.getColumnModel().getColumn(1).setResizable(false);
+            jTable1.getColumnModel().getColumn(1).setPreferredWidth(2);
+            jTable1.getColumnModel().getColumn(2).setResizable(false);
+            jTable1.getColumnModel().getColumn(3).setResizable(false);
+            jTable1.getColumnModel().getColumn(4).setResizable(false);
+            jTable1.getColumnModel().getColumn(5).setResizable(false);
+        }
 
         jTextArea1.setEditable(false);
         jTextArea1.setColumns(20);
@@ -234,7 +319,7 @@ public class sniffer extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane4)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 786, Short.MAX_VALUE)
             .addComponent(jScrollPane1)
             .addComponent(jScrollPane2)
             .addGroup(layout.createSequentialGroup()
@@ -283,7 +368,14 @@ public class sniffer extends javax.swing.JFrame {
                     + "\nHeader: " + PacketContents.rowList.get((int) obj)[12]
                     + "\nData: " + PacketContents.rowList.get((int) obj)[9]
             );
-
+            
+            Object sample = PacketContents.rowList.get((int) obj) [9];
+            try {
+                String msgDecode  = new String((byte[]) sample, "UTF-8");
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(sniffer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
             try {
                 jTextArea2.setText(customizeHexa(toHexadecimal(jTextArea1.getText())));
             } catch (UnsupportedEncodingException ex) {
@@ -351,7 +443,8 @@ public class sniffer extends javax.swing.JFrame {
     }//GEN-LAST:event_stopButtonActionPerformed
 
     private void listButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_listButtonActionPerformed
-        // TODO add your handling code here:
+        // TODO add your handling code here:\
+        System.getProperty("path.separator");
         InterfacesWindow nw = new InterfacesWindow();
     }//GEN-LAST:event_listButtonActionPerformed
 
@@ -390,6 +483,35 @@ public class sniffer extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_filter_optionsActionPerformed
 
+    private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
+        // TODO add your handling code here:
+        int dialogButton = JOptionPane.YES_NO_OPTION;
+        int dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to clean the console?","Warning",dialogButton);
+        if(dialogResult == JOptionPane.YES_OPTION){
+            DefaultTableModel dm = (DefaultTableModel) jTable1.getModel();
+            int rowCount = dm.getRowCount();
+            //Remove rows one by one from the end of the table
+            for (int i = rowCount - 1; i >= 0; i--) {
+                dm.removeRow(i);
+            }
+            packetList = new ArrayList<>();
+            //disabledButtons();
+        }
+    }//GEN-LAST:event_clearButtonActionPerformed
+
+    private void advancedButtonsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_advancedButtonsActionPerformed
+        // TODO add your handling code here:
+        advanced.setVisible(true);
+                
+    }//GEN-LAST:event_advancedButtonsActionPerformed
+
+    public void disabledButtons(){
+        this.captureButton.setEnabled(false);
+        this.filter_options.setEnabled(false);
+        this.stopButton.setEnabled(false);
+        this.saveButton.setEnabled(false);
+        this.advancedButtons.setEnabled(false);        
+    }
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -423,7 +545,9 @@ public class sniffer extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    public static java.awt.Button advancedButtons;
     public static java.awt.Button captureButton;
+    public static java.awt.Button clearButton;
     public static javax.swing.JComboBox<String> filter_options;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
